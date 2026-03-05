@@ -5,7 +5,7 @@ This repository contains an end-to-end Data Engineering pipeline that processes 
 ## Pipeline Architecture
 1. **Source Data**: `bigquery-public-data.london_bicycles`
 2. **Data Warehouse**: Google BigQuery (Personal Dataset: `london_bikes` in Project: `bigdatads2f`)
-3. **Ingestion**: Python copies raw public data directly into the personal BigQuery dataset.
+3. **Ingestion (Validation)**: Python verifies the connection and validates that the raw `cycle_hire` and `cycle_stations` tables exist directly in the personal BigQuery target dataset before invoking the pipeline.
 4. **ELT & Data Quality**: Python executes native BigQuery SQL (DDL and DML) to transform the raw tables into a Star Schema (`dim_stations`, `fact_trips`). It immediately runs Data Quality validation queries (checks for nulls, duplicates, and referential integrity).
 5. **Analysis**: Python queries the Star Schema, pulling aggregate metrics down to Pandas DataFrames for generating Seaborn/Matplotlib visualizations.
 6. **Orchestration**: A sleek python `schedule` script sequentially orchestrates the entire flow.
@@ -63,7 +63,7 @@ This will output `london_bicycles_report.pdf` into the repository.
 You can also find the Data Architecture mapping stored in `pipeline_architecture.drawio`
 
 ## Repository Structure
-- `ingestion.py`: Executes data extraction from BigQuery Public Data to Personal BigQuery raw tables.
+- `ingestion.py`: Pre-Flight pipeline validation ensuring BigQuery source tables exist.
 - `elt_pipeline.py`: Executes Star Schema DDL/DML and Data Quality Validation queries.
 - `analysis.py`: Performs Exploratory Data Analysis and generates `.png` charts.
 - `orchestrator.py`: Invokes the entire pipeline seamlessly.
