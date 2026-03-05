@@ -1,0 +1,11 @@
+london_bikes_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: oauth
+      project: "{{ env_var('DBT_BIGQUERY_PROJECT', 'bigdatads2f') }}"
+      dataset: "{{ env_var('DBT_BIGQUERY_DATASET', 'london_bikes') }}"
+      threads: 4
+      timeout_seconds: 300
+      location: US

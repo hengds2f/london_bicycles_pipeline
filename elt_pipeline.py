@@ -1,3 +1,4 @@
+import os
 from google.cloud import bigquery
 import logging
 import sys
@@ -12,16 +13,11 @@ DATASET_ID = 'london_bikes'
 # ---------------------
 
 def run_elt():
-    logging.info("Starting ELT process using BigQuery natively.")
-    
-    if PROJECT_ID == 'your_project_id' or DATASET_ID == 'your_dataset_id':
-        logging.error("Please configure PROJECT_ID and DATASET_ID in elt_pipeline.py")
-        raise ValueError("Missing GCP Project Configuration")
-        
+    logging.info("Starting ELT process using BigQuery.")
     client = bigquery.Client(project=PROJECT_ID)
     
     try:
-        # 1. Transformations and Star Schema Design
+        # Phase B: ELT Pipeline Transformations
         logging.info("Building Dimension: dim_stations")
         dim_stations_query = f"""
             CREATE OR REPLACE TABLE `{PROJECT_ID}.{DATASET_ID}.dim_stations` AS
@@ -60,47 +56,33 @@ def run_elt():
         
         logging.info("ELT transformations complete.")
         
-        # 2. Data Quality Testing
+        # Phase C: Data Quality Testing
         logging.info("Starting Data Quality Tests...")
         
-        # Test 1: Null values in PK
-        null_test_trips_query = f"SELECT COUNT(*) as cnt FROM `{PROJECT_ID}.{DATASET_ID}.fact_trips` WHERE trip_id IS NULL"
-        null_test_trips = list(client.query(null_test_trips_query).result())[0].cnt
+        # C.2 Test 1: Null values
+        null_test_trips = list(client.query(f"SELECT COUNT(*) as cnt FROM `{PROJECT_ID}.{DATASET_ID}.fact_trips` WHERE trip_id IS NULL").result())[0].cnt
         assert null_test_trips == 0, f"DQ Test Failed: Found {null_test_trips} null trip_ids!"
         
-        null_test_stations_query = f"SELECT COUNT(*) as cnt FROM `{PROJECT_ID}.{DATASET_ID}.dim_stations` WHERE station_id IS NULL"
-        null_test_stations = list(client.query(null_test_stations_query).result())[0].cnt
+        null_test_stations = list(client.query(f"SELECT COUNT(*) as cnt FROM `{PROJECT_ID}.{DATASET_ID}.dim_stations` WHERE station_id IS NULL").result())[0].cnt
         assert null_test_stations == 0, f"DQ Test Failed: Found {null_test_stations} null station_ids!"
         
-        # Test 2: Duplicates
-        duplicate_trips_query = f"""
-            SELECT trip_id, COUNT(*) as cnt
-            FROM `{PROJECT_ID}.{DATASET_ID}.fact_trips`
-            GROUP BY trip_id 
-            HAVING COUNT(*) > 1
-        """
-        duplicate_trips = list(client.query(duplicate_trips_query).result())
-        assert len(duplicate_trips) == 0, f"DQ Test Failed: Found {len(duplicate_trips)} duplicate trip_ids!"
+        # C.2 Test 2: Duplicates
+        duplicate_trips = list(client.query(f"SELECT trip_id, COUNT(*) as cnt FROM `{PROJECT_ID}.{DATASET_ID}.fact_trips` GROUP BY trip_id HAVING COUNT(*) > 1").result())
+        assert len(duplicate_trips) == 0, f"DQ Test Failed: Found duplicates in fact_trips!"
         
-        duplicate_stations_query = f"""
-            SELECT station_id, COUNT(*) as cnt
-            FROM `{PROJECT_ID}.{DATASET_ID}.dim_stations`
-            GROUP BY station_id 
-            HAVING COUNT(*) > 1
-        """
-        duplicate_stations = list(client.query(duplicate_stations_query).result())
-        assert len(duplicate_stations) == 0, f"DQ Test Failed: Found {len(duplicate_stations)} duplicate station_ids!"
+        duplicate_stations = list(client.query(f"SELECT station_id, COUNT(*) as cnt FROM `{PROJECT_ID}.{DATASET_ID}.dim_stations` GROUP BY station_id HAVING COUNT(*) > 1").result())
+        assert len(duplicate_stations) == 0, f"DQ Test Failed: Found duplicates in dim_stations!"
         
-        # Test 3: Referential Integrity
-        missing_start_stations_query = f"""
+        # C.2 Test 3: Referential Integrity
+        missing_stations_query = f"""
             SELECT COUNT(*) as cnt
             FROM `{PROJECT_ID}.{DATASET_ID}.fact_trips` f
             LEFT JOIN `{PROJECT_ID}.{DATASET_ID}.dim_stations` s ON f.start_station_id = s.station_id
             WHERE s.station_id IS NULL
         """
-        missing_start_stations = list(client.query(missing_start_stations_query).result())[0].cnt
+        missing_start_stations = list(client.query(missing_stations_query).result())[0].cnt
         if missing_start_stations > 0:
-            logging.warning(f"DQ Warning: {missing_start_stations} trips have unknown start_station_id.")
+            logging.warning(f"DQ Warning: {missing_start_stations} trips have missing referential start_station_id.")
             
         logging.info("Data Quality Tests Passed successfully.")
         

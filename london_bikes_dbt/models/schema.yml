@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: dim_stations
+    description: "Dimension table containing London bicycle stations"
+    columns:
+      - name: station_id
+        description: "Primary key for the station"
+        tests:
+          - unique
+          - not_null
+
+  - name: fact_trips
+    description: "Fact table recording all bicycle rentals"
+    columns:
+      - name: trip_id
+        description: "Primary key for the trip"
+        tests:
+          - unique
+          - not_null
+      - name: start_station_id
+        description: "Foreign key to dim_stations representing where the trip started"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_stations')
+              field: station_id
+      - name: end_station_id
+        description: "Foreign key to dim_stations representing where the trip ended"
+        tests:
+          - not_null
+      - name: duration_sec
+        description: "Length of the trip in seconds"
+        tests:
+          - not_null

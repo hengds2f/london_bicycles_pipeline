@@ -43,24 +43,16 @@ def generate_pdf():
     pdf.set_font("Arial", 'B', 14)
     pdf.cell(0, 10, '3. Data Analysis & Findings', 0, 1)
     pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, "Our exploratory analysis yielded key insights regarding usage patterns over time and space.")
+    pdf.multi_cell(0, 10, "Our exploratory analysis yielded 4 key strategic insights regarding the London Bikes network:")
     pdf.ln(5)
 
-    try:
-        pdf.image('analysis_output/trips_by_hour.png', w=170)
-        pdf.ln(5)
-        pdf.multi_cell(0, 10, "Insight 1: Busiest Hours. The peak hours are clearly reflecting morning (typically 8 AM) and evening (typically 5 PM) commuter peaks, indicating usage is heavily tailored around workforce transit.")
-    except Exception as e:
-        pdf.multi_cell(0, 10, "(Image missing - analysis output not found)")
-        
-    pdf.add_page()
-    try:
-        pdf.image('analysis_output/top_10_start_stations.png', w=170)
-        pdf.ln(5)
-        pdf.multi_cell(0, 10, "Insight 2: Busiest Stations. The top starting stations concentrate heavily around major transit hubs and business centers, providing key supply-chain locations for bicycle reallocation.")
-    except Exception as e:
-        pdf.multi_cell(0, 10, "(Image missing - analysis output not found)")
-
+    pdf.multi_cell(0, 10, "1) Revenue Is Dangerously Seasonal: Volume drastically reduces in winter, requiring proactive operational downsizing to save logistical cost.")
+    pdf.multi_cell(0, 10, "2) Revenue Opportunity Is Concentrated Hourly: Data proves an incredibly high concentration during 8 AM and 5 PM commuter hours. A dynamic pricing structure during these hours would maximize revenue.")
+    pdf.multi_cell(0, 10, "3) Demand Spikes Are Invisible Until Too Late: Day-over-day volatility graphs show massive unpredictable variance. ML predictive stock algorithms are necessary.")
+    pdf.multi_cell(0, 10, "4) Key Volume Is Concentrated in Just a few Stations: A tiny fraction of outposts handle massive percentages of utilization, demanding prioritized maintenance budgets.")
+    
+    pdf.ln(5)
+    
     # Section 4: Business Recommendations
     pdf.set_font("Arial", 'B', 14)
     pdf.cell(0, 10, '4. Business Recommendations for Executives', 0, 1)
