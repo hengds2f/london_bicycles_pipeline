@@ -1,19 +1,30 @@
-import duckdb
+from google.cloud import bigquery
 import logging
 import sys
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def run_elt(db_path='data_warehouse.duckdb'):
-    logging.info("Starting ELT process using DuckDB natively.")
-    conn = duckdb.connect(db_path)
+# --- CONFIGURATION ---
+# Replace these with your actual GCP Project ID and BigQuery Dataset ID
+PROJECT_ID = 'bigdatads2f'
+DATASET_ID = 'london_bikes'
+# ---------------------
+
+def run_elt():
+    logging.info("Starting ELT process using BigQuery natively.")
+    
+    if PROJECT_ID == 'your_project_id' or DATASET_ID == 'your_dataset_id':
+        logging.error("Please configure PROJECT_ID and DATASET_ID in elt_pipeline.py")
+        raise ValueError("Missing GCP Project Configuration")
+        
+    client = bigquery.Client(project=PROJECT_ID)
     
     try:
         # 1. Transformations and Star Schema Design
         logging.info("Building Dimension: dim_stations")
-        conn.execute("""
-            CREATE OR REPLACE TABLE dim_stations AS
+        dim_stations_query = f"""
+            CREATE OR REPLACE TABLE `{PROJECT_ID}.{DATASET_ID}.dim_stations` AS
             SELECT 
                 id AS station_id,
                 name AS station_name,
@@ -22,13 +33,14 @@ def run_elt(db_path='data_warehouse.duckdb'):
                 latitude,
                 longitude,
                 install_date
-            FROM raw_cycle_stations
+            FROM `{PROJECT_ID}.{DATASET_ID}.raw_cycle_stations`
             WHERE id IS NOT NULL
-        """)
+        """
+        client.query(dim_stations_query).result()
         
         logging.info("Building Fact: fact_trips (with derived columns and cleaning)")
-        conn.execute("""
-            CREATE OR REPLACE TABLE fact_trips AS
+        fact_trips_query = f"""
+            CREATE OR REPLACE TABLE `{PROJECT_ID}.{DATASET_ID}.fact_trips` AS
             SELECT 
                 rental_id AS trip_id,
                 duration AS duration_sec,
@@ -38,12 +50,13 @@ def run_elt(db_path='data_warehouse.duckdb'):
                 start_station_id,
                 end_date,
                 end_station_id
-            FROM raw_cycle_hire
+            FROM `{PROJECT_ID}.{DATASET_ID}.raw_cycle_hire`
             WHERE rental_id IS NOT NULL 
               AND start_station_id IS NOT NULL
               AND end_station_id IS NOT NULL
               AND duration > 0 -- Data cleaning
-        """)
+        """
+        client.query(fact_trips_query).result()
         
         logging.info("ELT transformations complete.")
         
@@ -51,37 +64,41 @@ def run_elt(db_path='data_warehouse.duckdb'):
         logging.info("Starting Data Quality Tests...")
         
         # Test 1: Null values in PK
-        null_test_trips = conn.execute("SELECT COUNT(*) FROM fact_trips WHERE trip_id IS NULL").fetchone()[0]
+        null_test_trips_query = f"SELECT COUNT(*) as cnt FROM `{PROJECT_ID}.{DATASET_ID}.fact_trips` WHERE trip_id IS NULL"
+        null_test_trips = list(client.query(null_test_trips_query).result())[0].cnt
         assert null_test_trips == 0, f"DQ Test Failed: Found {null_test_trips} null trip_ids!"
         
-        null_test_stations = conn.execute("SELECT COUNT(*) FROM dim_stations WHERE station_id IS NULL").fetchone()[0]
+        null_test_stations_query = f"SELECT COUNT(*) as cnt FROM `{PROJECT_ID}.{DATASET_ID}.dim_stations` WHERE station_id IS NULL"
+        null_test_stations = list(client.query(null_test_stations_query).result())[0].cnt
         assert null_test_stations == 0, f"DQ Test Failed: Found {null_test_stations} null station_ids!"
         
         # Test 2: Duplicates
-        duplicate_trips = conn.execute("""
-            SELECT trip_id, COUNT(*) 
-            FROM fact_trips 
+        duplicate_trips_query = f"""
+            SELECT trip_id, COUNT(*) as cnt
+            FROM `{PROJECT_ID}.{DATASET_ID}.fact_trips`
             GROUP BY trip_id 
             HAVING COUNT(*) > 1
-        """).fetchall()
+        """
+        duplicate_trips = list(client.query(duplicate_trips_query).result())
         assert len(duplicate_trips) == 0, f"DQ Test Failed: Found {len(duplicate_trips)} duplicate trip_ids!"
         
-        duplicate_stations = conn.execute("""
-            SELECT station_id, COUNT(*) 
-            FROM dim_stations 
+        duplicate_stations_query = f"""
+            SELECT station_id, COUNT(*) as cnt
+            FROM `{PROJECT_ID}.{DATASET_ID}.dim_stations`
             GROUP BY station_id 
             HAVING COUNT(*) > 1
-        """).fetchall()
+        """
+        duplicate_stations = list(client.query(duplicate_stations_query).result())
         assert len(duplicate_stations) == 0, f"DQ Test Failed: Found {len(duplicate_stations)} duplicate station_ids!"
         
         # Test 3: Referential Integrity
-        missing_start_stations = conn.execute("""
-            SELECT COUNT(*) 
-            FROM fact_trips f
-            LEFT JOIN dim_stations s ON f.start_station_id = s.station_id
+        missing_start_stations_query = f"""
+            SELECT COUNT(*) as cnt
+            FROM `{PROJECT_ID}.{DATASET_ID}.fact_trips` f
+            LEFT JOIN `{PROJECT_ID}.{DATASET_ID}.dim_stations` s ON f.start_station_id = s.station_id
             WHERE s.station_id IS NULL
-        """).fetchone()[0]
-        # Allowing some missing refs as it's public/mock data, but let's just log it if not strictly 0.
+        """
+        missing_start_stations = list(client.query(missing_start_stations_query).result())[0].cnt
         if missing_start_stations > 0:
             logging.warning(f"DQ Warning: {missing_start_stations} trips have unknown start_station_id.")
             
@@ -89,10 +106,7 @@ def run_elt(db_path='data_warehouse.duckdb'):
         
     except Exception as e:
         logging.error(f"ELT/DQ Process failed: {e}")
-        conn.close()
         sys.exit(1)
-        
-    conn.close()
 
 if __name__ == "__main__":
     run_elt()

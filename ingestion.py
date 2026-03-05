@@ -1,73 +1,61 @@
 import os
 from google.cloud import bigquery
-import duckdb
-import pandas as pd
 import logging
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def ingest_data(db_path='data_warehouse.duckdb'):
-    logging.info("Starting data ingestion from BigQuery.")
+# --- CONFIGURATION ---
+# Replace these with your actual GCP Project ID and BigQuery Dataset ID
+PROJECT_ID = 'bigdatads2f'
+DATASET_ID = 'london_bikes'
+# ---------------------
+
+def ingest_data():
+    logging.info("Starting data ingestion from BigQuery Public to Personal BigQuery Dataset.")
+    
+    if PROJECT_ID == 'your_project_id' or DATASET_ID == 'your_dataset_id':
+        logging.error("Please configure PROJECT_ID and DATASET_ID in ingestion.py")
+        raise ValueError("Missing GCP Project Configuration")
+
+    client = bigquery.Client(project=PROJECT_ID)
     
     try:
-        logging.info("Attempting to connect to BigQuery with default credentials...")
-        client = bigquery.Client()
-        
-        # Extract Stations
-        stations_query = """
+        # 1. Create target dataset if it doesn't exist
+        dataset_ref = f"{PROJECT_ID}.{DATASET_ID}"
+        dataset = bigquery.Dataset(dataset_ref)
+        dataset.location = "US" # Change location if needed
+        dataset = client.create_dataset(dataset, exists_ok=True)
+        logging.info(f"Dataset {dataset_ref} is ready.")
+
+        # 2. Copy Stations Data
+        target_stations_table = f"{PROJECT_ID}.{DATASET_ID}.raw_cycle_stations"
+        stations_query = f"""
+            CREATE OR REPLACE TABLE `{target_stations_table}` AS
             SELECT id, name, bikes_count, docks_count, install_date, latitude, longitude 
             FROM `bigquery-public-data.london_bicycles.cycle_stations`
         """
-        logging.info("Fetching cycle stations...")
-        stations_df = client.query(stations_query).to_dataframe()
-        
-        # Extract Trips
-        trips_query = """
+        logging.info(f"Copying stations data to {target_stations_table}...")
+        job = client.query(stations_query)
+        job.result() # Wait for job to complete
+        logging.info("Stations data copied successfully.")
+
+        # 3. Copy Trips Data (Sample of 100k)
+        target_trips_table = f"{PROJECT_ID}.{DATASET_ID}.raw_cycle_hire"
+        trips_query = f"""
+            CREATE OR REPLACE TABLE `{target_trips_table}` AS
             SELECT rental_id, duration, bike_id, end_date, end_station_id, start_date, start_station_id 
             FROM `bigquery-public-data.london_bicycles.cycle_hire`
             LIMIT 100000
         """
-        logging.info("Fetching cycle trips (100k sample)...")
-        trips_df = client.query(trips_query).to_dataframe()
-        
+        logging.info(f"Copying trips data to {target_trips_table}...")
+        job = client.query(trips_query)
+        job.result() # Wait for job to complete
+        logging.info("Trips data copied successfully.")
+
     except Exception as e:
-        logging.warning(f"BigQuery authentication failed ({e}). Proceeding with mock data fallback to allow pipeline to run.")
-        
-        # Fallback Mock Data matching BigQuery schema
-        stations_df = pd.DataFrame({
-            'id': [1, 2, 3],
-            'name': ['Station A', 'Station B', 'Station C'],
-            'bikes_count': [10, 15, 20],
-            'docks_count': [20, 20, 25],
-            'install_date': pd.to_datetime(['2010-01-01', '2011-05-10', '2012-08-15']),
-            'latitude': [51.5, 51.51, 51.52],
-            'longitude': [-0.1, -0.11, -0.12]
-        })
-        
-        dates = pd.date_range(start='2023-01-01', periods=1000, freq='h')
-        import numpy as np
-        trips_df = pd.DataFrame({
-            'rental_id': range(1, 1001),
-            'duration': np.random.randint(300, 3600, 1000), # 5 min to 1 hour
-            'bike_id': np.random.randint(100, 200, 1000),
-            'start_date': dates,
-            'end_date': dates + pd.to_timedelta(np.random.randint(300, 3600, 1000), unit='s'),
-            'start_station_id': np.random.choice([1, 2, 3], 1000),
-            'end_station_id': np.random.choice([1, 2, 3], 1000)
-        })
-        logging.info("Mock cycle stations and trips generated.")
-        
-    # Load into DuckDB
-    logging.info(f"Loading data into DuckDB: {db_path}")
-    conn = duckdb.connect(db_path)
-    
-    # Save as raw tables natively in DuckDB using the DataFrames in scope
-    conn.execute("CREATE OR REPLACE TABLE raw_cycle_stations AS SELECT * FROM stations_df")
-    conn.execute("CREATE OR REPLACE TABLE raw_cycle_hire AS SELECT * FROM trips_df")
-    
-    conn.close()
-    logging.info("Data ingestion complete.")
+        logging.error(f"Error during BigQuery ingestion: {e}")
+        raise e
 
 if __name__ == "__main__":
     ingest_data()

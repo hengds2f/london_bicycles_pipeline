@@ -12,13 +12,13 @@ def run_pipeline():
     
     try:
         logging.info("Step 1: Ingestion")
-        ingest_data('data_warehouse.duckdb')
+        ingest_data()
         
         logging.info("Step 2: ELT & DQ")
-        run_elt('data_warehouse.duckdb')
+        run_elt()
         
         logging.info("Step 3: Analysis")
-        analyze_data('data_warehouse.duckdb', 'analysis_output')
+        analyze_data('analysis_output')
         
         logging.info("Pipeline Execution Complete!")
         

@@ -31,7 +31,7 @@ def generate_pdf():
     arch_text = (
         "1. Source: Google BigQuery Public Data (london_bicycles dataset).\n"
         "2. Ingestion: Python extracts the data to a local environment ensuring no network payload bottlenecks.\n"
-        "3. Data Warehouse: DuckDB is used as the analytical database. It is much faster than SQLite for OLAP workloads and integrates natively with Python and Pandas.\n"
+        "3. Data Warehouse: Google BigQuery is used as the analytical database. It serves as a scalable, cloud-native warehouse resolving large-scale OLAP workloads seamlessly.\n"
         "4. ELT & Data Quality: Python-native SQL performs Data Cleaning, derivations, and tests for exact duplicates, null checks, and referential integrity.\n"
         "5. Orchestration: Prefect orchestrates the entire pipeline, creating a resilient, visible, and easily schedulable DAG.\n"
         "6. Lineage: BigQuery -> raw_cycle_stations / raw_cycle_hire -> dim_stations / fact_trips -> Python Analysis."
