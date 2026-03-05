@@ -1,0 +1,11 @@
+google-cloud-bigquery
+db-dtypes
+duckdb
+duckdb-engine
+pandas
+dbt-duckdb
+dbt-core
+prefect
+matplotlib
+seaborn
+fpdf

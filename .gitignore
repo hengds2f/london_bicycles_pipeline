@@ -1,0 +1,5 @@
+data_warehouse.duckdb
+data_warehouse.duckdb.wal
+analysis_output/
+__pycache__/
+.env
