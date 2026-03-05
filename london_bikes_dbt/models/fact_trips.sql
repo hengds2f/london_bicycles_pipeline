@@ -9,7 +9,7 @@ SELECT
     start_station_id,
     end_date,
     end_station_id
-FROM `bigdatads2f.london_bikes.raw_cycle_hire`
+FROM `bigdatads2f.london_bikes.cycle_hire`
 WHERE rental_id IS NOT NULL 
   AND start_station_id IS NOT NULL
   AND end_station_id IS NOT NULL

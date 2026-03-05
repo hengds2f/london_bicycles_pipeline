@@ -8,5 +8,5 @@ SELECT
     latitude,
     longitude,
     install_date
-FROM `bigdatads2f.london_bikes.raw_cycle_stations`
+FROM `bigdatads2f.london_bikes.cycle_stations`
 WHERE id IS NOT NULL

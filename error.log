@@ -1,0 +1,173 @@
+Traceback (most recent call last):
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\cloud\bigquery\dbapi\cursor.py", line 220, in _execute
+    rows = client.query_and_wait(
+        formatted_operation,
+        job_config=config,
+        page_size=self.arraysize,
+    )
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\cloud\bigquery\client.py", line 3684, in query_and_wait
+    return self._query_and_wait_bigframes(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        query,
+        ^^^^^^
+    ...<8 lines>...
+        max_results=max_results,
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\cloud\bigquery\client.py", line 3730, in _query_and_wait_bigframes
+    return _job_helpers.query_and_wait(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<10 lines>...
+        callback=callback,
+        ^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\cloud\bigquery\_job_helpers.py", line 639, in query_and_wait
+    return job_retry(do_query)()
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\api_core\retry\retry_unary.py", line 294, in retry_wrapped_func
+    return retry_target(
+        target,
+    ...<3 lines>...
+        on_error=on_error,
+    )
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\api_core\retry\retry_unary.py", line 156, in retry_target
+    next_sleep = _retry_error_helper(
+        exc,
+    ...<6 lines>...
+        timeout,
+    )
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\api_core\retry\retry_base.py", line 216, in _retry_error_helper
+    raise final_exc from source_exc
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\api_core\retry\retry_unary.py", line 147, in retry_target
+    result = target()
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\cloud\bigquery\_job_helpers.py", line 557, in do_query
+    response = retry(client._call_api)(
+        retry=None,  # We're calling the retry decorator ourselves.
+    ...<5 lines>...
+        timeout=api_timeout,
+    )
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\api_core\retry\retry_unary.py", line 294, in retry_wrapped_func
+    return retry_target(
+        target,
+    ...<3 lines>...
+        on_error=on_error,
+    )
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\api_core\retry\retry_unary.py", line 156, in retry_target
+    next_sleep = _retry_error_helper(
+        exc,
+    ...<6 lines>...
+        timeout,
+    )
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\api_core\retry\retry_base.py", line 216, in _retry_error_helper
+    raise final_exc from source_exc
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\api_core\retry\retry_unary.py", line 147, in retry_target
+    result = target()
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\cloud\bigquery\client.py", line 861, in _call_api
+    return call()
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\cloud\_http\__init__.py", line 494, in api_request
+    raise exceptions.from_http_response(response)
+google.api_core.exceptions.NotFound: 404 POST https://bigquery.googleapis.com/bigquery/v2/projects/bigdatads2f/queries?prettyPrint=false: Not found: Table bigdatads2f:london_bikes.fact_trips was not found in location US
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\sqlalchemy_bigquery\base.py", line 1140, in do_execute
+    cursor.execute(statement, parameters, **kwargs)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\cloud\bigquery\dbapi\_helpers.py", line 496, in with_closed_check
+    return method(self, *args, **kwargs)
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\cloud\bigquery\dbapi\cursor.py", line 189, in execute
+    self._execute(
+    ~~~~~~~~~~~~~^
+        formatted_operation, parameters, job_id, job_config, parameter_types
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\cloud\bigquery\dbapi\cursor.py", line 226, in _execute
+    raise exceptions.DatabaseError(exc)
+google.cloud.bigquery.dbapi.exceptions.DatabaseError: 404 POST https://bigquery.googleapis.com/bigquery/v2/projects/bigdatads2f/queries?prettyPrint=false: Not found: Table bigdatads2f:london_bikes.fact_trips was not found in location US
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\analysis.py", line 43, in <module>
+    df_seasonality = pd.read_sql(query_seasonality, engine)
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\pandas\io\sql.py", line 736, in read_sql
+    return pandas_sql.read_query(
+           ~~~~~~~~~~~~~~~~~~~~~^
+        sql,
+        ^^^^
+    ...<6 lines>...
+        dtype=dtype,
+        ^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\pandas\io\sql.py", line 1848, in read_query
+    result = self.execute(sql, params)
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\pandas\io\sql.py", line 1671, in execute
+    return self.con.exec_driver_sql(sql, *args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\sqlalchemy\engine\base.py", line 1779, in exec_driver_sql
+    ret = self._execute_context(
+        dialect,
+    ...<5 lines>...
+        distilled_parameters,
+    )
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\sqlalchemy_bigquery\base.py", line 1140, in do_execute
+    cursor.execute(statement, parameters, **kwargs)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\cloud\bigquery\dbapi\_helpers.py", line 496, in with_closed_check
+    return method(self, *args, **kwargs)
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\cloud\bigquery\dbapi\cursor.py", line 189, in execute
+    self._execute(
+    ~~~~~~~~~~~~~^
+        formatted_operation, parameters, job_id, job_config, parameter_types
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\user\Documents\Module2\london_bicycles_pipeline\dbt_env\Lib\site-packages\google\cloud\bigquery\dbapi\cursor.py", line 226, in _execute
+    raise exceptions.DatabaseError(exc)
+sqlalchemy.exc.DatabaseError: (google.cloud.bigquery.dbapi.exceptions.DatabaseError) 404 POST https://bigquery.googleapis.com/bigquery/v2/projects/bigdatads2f/queries?prettyPrint=false: Not found: Table bigdatads2f:london_bikes.fact_trips was not found in location US
+[SQL: 
+SELECT 
+  EXTRACT(MONTH FROM start_date) as month,
+  COUNT(trip_id) as total_trips
+FROM fact_trips
+GROUP BY month
+ORDER BY month
+]
+(Background on this error at: https://sqlalche.me/e/20/4xp6)

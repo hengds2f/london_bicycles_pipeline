@@ -29,7 +29,7 @@ def run_elt():
                 latitude,
                 longitude,
                 install_date
-            FROM `{PROJECT_ID}.{DATASET_ID}.raw_cycle_stations`
+            FROM `{PROJECT_ID}.{DATASET_ID}.cycle_stations`
             WHERE id IS NOT NULL
         """
         client.query(dim_stations_query).result()
@@ -46,7 +46,7 @@ def run_elt():
                 start_station_id,
                 end_date,
                 end_station_id
-            FROM `{PROJECT_ID}.{DATASET_ID}.raw_cycle_hire`
+            FROM `{PROJECT_ID}.{DATASET_ID}.cycle_hire`
             WHERE rental_id IS NOT NULL 
               AND start_station_id IS NOT NULL
               AND end_station_id IS NOT NULL
