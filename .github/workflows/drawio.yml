@@ -18,13 +18,15 @@ jobs:
           fetch-depth: 0
 
       - name: Export drawio files
-        uses: rlespinasse/drawio-export-action@v2
+        uses: rlespinasse/drawio-export-action@v3
         with:
-          format: 'svg'
+          format: svg
           transparent: true
-
+      - name: Move SVGs
+        run: |
+          find . -name "*.svg" -exec cp {} . \;
+          git status
       - name: Commit exported images
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "docs: Auto-export drawio to SVG"
-          file_pattern: "*.svg"
