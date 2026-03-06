@@ -18,7 +18,7 @@ jobs:
           fetch-depth: 0
 
       - name: Export drawio files
-        uses: rlespinasse/drawio-export-action@v3
+        uses: rlespinasse/drawio-export-action@v2
         with:
           format: 'svg'
           transparent: true
