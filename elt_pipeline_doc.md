@@ -1,0 +1,61 @@
+# Documentation for `elt_pipeline.py`
+
+This document provides a line-by-line explanation of the `elt_pipeline.py` script.
+
+- **Line 1:** `import os` - Imports the standard `os` module (though not used in this script directly, it is often imported for OS operations).
+- **Line 2:** `from google.cloud import bigquery` - Imports the BigQuery client library to run SQL queries via Python.
+- **Line 3:** `import logging` - Imports standard logging module to record run status and errors.
+- **Line 4:** `import sys` - Imports `sys` to terminate the script easily if errors occur.
+- **Line 5:** Blank line.
+- **Line 6:** `# Configure logging` - A comment explaining the next logging setup line.
+- **Line 7:** `logging.basicConfig(...)` - Configures logging to record INFO-level logs and above, formatting with timestamps, level name, and text.
+- **Line 8:** Blank line.
+- **Line 9-14:** Several comments and configuration constants defining the `PROJECT_ID` ('bigdatads2f') and `DATASET_ID` ('london_bikes').
+- **Line 15:** `def run_elt():` - Defines the main function executing the Extract-Load-Transform process.
+- **Line 16:** `logging.info(...)` - Logs that the ELT process is starting.
+- **Line 17:** `client = bigquery.Client(project=PROJECT_ID)` - Instantiates a BigQuery client targeting the specified project ID.
+- **Line 18:** Blank line.
+- **Line 19:** `try:` - Starts the main error-handling block.
+- **Line 20:** `# Phase B: ELT Pipeline Transformations` - Comment header marking Phase B of the pipeline.
+- **Line 21:** `logging.info("Building Dimension: dim_stations")` - Logs that it's starting the creation of the `dim_stations` dimension table.
+- **Line 22-34:** `dim_stations_query = f"""..."""` - A multiline Python string holding the SQL query to create or replace `dim_stations`. The SQL selects base attributes from `cycle_stations` and filters out null `id` values. It utilizes f-strings to inject dataset and project IDs into the SQL.
+- **Line 35:** `client.query(dim_stations_query).result()` - Executes the query blocking until the BigQuery job finishes.
+- **Line 36:** Blank line.
+- **Line 37:** `logging.info(...)` - Logs that it's moving on to build the `fact_trips` fact table.
+- **Line 38-54:** `fact_trips_query = f"""..."""` - Contains the SQL to build `fact_trips` from `cycle_hire`. It creates derived columns (`duration_min`) and implements data cleaning by filtering out nulls (`rental_id`, station IDs) and records where `duration <= 0`.
+- **Line 55:** `client.query(fact_trips_query).result()` - Executes the query to create/replace `fact_trips` in BigQuery.
+- **Line 56:** Blank line.
+- **Line 57:** `logging.info("ELT transformations complete.")` - Logs a success message for the transformation step.
+- **Line 58:** Blank line.
+- **Line 59:** `# Phase C: Data Quality Testing` - Comment delineating Phase C, data quality tests.
+- **Line 60:** `logging.info(...)` - Logs that Data Quality (DQ) tests are starting.
+- **Line 61:** Blank line.
+- **Line 62:** `# C.2 Test 1: Null values` - Comments the first DQ test.
+- **Line 63:** `null_test_trips = list(client.query(f"SELECT COUNT(*) as cnt FROM ...").result())[0].cnt` - Executes a BigQuery SQL statement counting null `trip_id` values in `fact_trips` and retrieves the result integer.
+- **Line 64:** `assert null_test_trips == 0, ...` - An assertion verifying there are zero null trips; fails the script if violated.
+- **Line 65:** Blank line.
+- **Line 66:** `null_test_stations = list(...)` - Executes a similar SQL count, checking for null `station_id` values in `dim_stations`.
+- **Line 67:** `assert null_test_stations == 0, ...` - Asserts that no missing station IDs exist, raising an error if so.
+- **Line 68:** Blank line.
+- **Line 69:** `# C.2 Test 2: Duplicates` - Comment noting the duplicate checking test.
+- **Line 70:** `duplicate_trips = list(...)` - Executes a SQL query checking the `fact_trips` table to find trips sharing the same `trip_id`.
+- **Line 71:** `assert len(duplicate_trips) == 0, ...` - Asserts that no duplicate trips were returned, throwing an exception if any were.
+- **Line 72:** Blank line.
+- **Line 73:** `duplicate_stations = list(...)` - Executes a query looking for identical `station_id` records in `dim_stations`.
+- **Line 74:** `assert len(duplicate_stations) == 0, ...` - Asserts no duplicate stations are found.
+- **Line 75:** Blank line.
+- **Line 76:** `# C.2 Test 3: Referential Integrity` - Comment denoting a test on referential linkage between facts and dimensions.
+- **Line 77-82:** `missing_stations_query = ...` - A SQL query performing a LEFT JOIN from `fact_trips` to `dim_stations` to find rows in facts missing a parent station in the dimension.
+- **Line 83:** `missing_start_stations = list(client.query(...))[0].cnt` - Executes the query and grabs the null referential integrity count.
+- **Line 84:** `if missing_start_stations > 0:` - Checks if there are any broken referential links.
+- **Line 85:** `logging.warning(...)` - Logs a warning rather than failing the process completely for referential integrity.
+- **Line 86:** Blank line.
+- **Line 87:** `logging.info("Data Quality Tests Passed successfully.")` - Logs that all DQ tests concluded successfully (no asserts triggered).
+- **Line 88:** Blank line.
+- **Line 89:** `except Exception as e:` - General try-except error handler that traps any assertion failures, syntax errors, or BigQuery connectivity issues.
+- **Line 90:** `logging.error(...)` - Logs the resulting error message.
+- **Line 91:** `sys.exit(1)` - Exits the pipeline with a failure signal.
+- **Line 92:** Blank line.
+- **Line 93:** `if __name__ == "__main__":` - Detects if script is the main program.
+- **Line 94:** `run_elt()` - Kicks off the `run_elt()` process.
+- **Line 95:** Blank line.

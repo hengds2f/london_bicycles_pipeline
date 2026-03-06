@@ -1,0 +1,89 @@
+# Documentation for `analysis.py`
+
+This document provides a line-by-line explanation of the `analysis.py` script.
+
+- **Line 1:** `#!/usr/bin/env python` - Shebang line to execute the script using the Python interpreter found in the system's environment.
+- **Line 2:** `# coding: utf-8` - Declares the file encoding as UTF-8, allowing for special characters in the code.
+- **Line 3:** Blank line.
+- **Lines 4-5:** `# # London Bicycles: Exploratory Data Analysis & Strategic Business Findings` - A markdown-style header comment explaining the purpose of the code: analyzing the `london_bikes` BigQuery dataset to address business findings.
+- **Line 6:** Blank line.
+- **Line 7:** `# In[ ]:` - An artifact comment originating from Jupyter Notebook cell conversions, marking the start of a code block.
+- **Line 8:** Blank line.
+- **Line 9:** Blank line.
+- **Line 10:** `import pandas as pd` - Imports the pandas library to manipulate and analyze tabular data.
+- **Line 11:** `import matplotlib.pyplot as plt` - Imports matplotlib's pyplot module for rendering visualizations.
+- **Line 12:** `import seaborn as sns` - Imports the seaborn library for enhanced, high-level statistical charting.
+- **Line 13:** `from sqlalchemy import create_engine` - Imports the `create_engine` function from SQLAlchemy to establish database connections.
+- **Line 14:** `import warnings` - Imports the built-in warnings module.
+- **Line 15:** `warnings.filterwarnings('ignore')` - Suppresses any warning messages appearing during execution, keeping standard output clean.
+- **Line 16:** Blank line.
+- **Line 17:** `# Set visual style for executive-level charts` - A comment explaining the purpose of the following styling lines.
+- **Line 18:** `plt.style.use('ggplot')` - Applies the popular 'ggplot' visual style to matplotlib graphs for a polished appearance.
+- **Line 19:** `sns.set_palette("coolwarm")` - Configures seaborn to use the "coolwarm" color palette for all subsequent plots.
+- **Line 20:** Blank line.
+- **Line 21:** `# Connect to BigQuery using SQLAlchemy` - A comment explaining the BigQuery connection setup.
+- **Line 22:** `PROJECT_ID = 'bigdatads2f'` - Defines the Google Cloud project ID containing the data.
+- **Line 23:** `DATASET_ID = 'london_bikes'` - Defines the target BigQuery dataset.
+- **Line 24:** `engine = create_engine(f'bigquery://{PROJECT_ID}/{DATASET_ID}')` - Instantiates the SQLAlchemy engine mapped to the BigQuery dialect, pointing to the designated project and dataset.
+- **Line 25:** `print("Securely connected to Google BigQuery Data Warehouse.")` - Prints a success message validating the connection setup initialization.
+- **Line 26:** Blank line.
+- **Line 27:** Blank line.
+- **Lines 28-30:** Comments serving as a markdown cell header, describing Finding 1: analyzing trip seasonality and revenue fluctuations.
+- **Line 31:** Blank line.
+- **Line 32:** `# In[ ]:` - A Jupyter Notebook cell marker.
+- **Line 33:** Blank line.
+- **Line 34:** Blank line.
+- **Lines 35-42:** `query_seasonality = """..."""` - A multi-line string defining a BigQuery SQL statement. It extracts the month from the start date, counts total trips, and groups/orders by month.
+- **Line 43:** `df_seasonality = pd.read_sql(query_seasonality, engine)` - Executes the SQL query using pandas and loads the result directly into a DataFrame called `df_seasonality`.
+- **Line 44:** Blank line.
+- **Line 45:** `plt.figure(figsize=(10, 5))` - Initializes a matplotlib figure with dimensions 10 by 5 inches.
+- **Line 46:** `sns.barplot(data=df_seasonality, x='month', y='total_trips', color='royalblue')` - Plots a bar chart with the extracted month on the x-axis and trip volume on the y-axis, colored royal blue.
+- **Line 47:** `plt.title('Monthly Trip Volume (Validating Seasonality)', fontsize=14, fontweight='bold')` - Sets the plot title with customized font size and bold weighting.
+- **Line 48:** `plt.xlabel('Month of Year', fontsize=12)` - Sets the x-axis label.
+- **Line 49:** `plt.ylabel('Total Trips', fontsize=12)` - Sets the y-axis label.
+- **Line 50:** `plt.show()` - Displays the rendered plot to the user.
+- **Lines 51-56:** Jupyter Notebook markdown cell markers and text explaining Finding 2: recognizing hourly trip concentration and commuting pressure.
+- **Line 57:** `# In[ ]:` - A Jupyter Notebook cell marker.
+- **Line 58:** Blank line.
+- **Line 59:** Blank line.
+- **Lines 60-67:** `query_hourly = """..."""` - A SQL query extracting the hour of the day from `start_date` and tallying trip counts grouped by hour.
+- **Line 68:** `df_hourly = pd.read_sql(query_hourly, engine)` - Pulls the hourly trip aggregation from BigQuery into a pandas DataFrame.
+- **Line 69:** Blank line.
+- **Line 70:** `plt.figure(figsize=(10, 5))` - Starts a new 10x5 inch plot figure.
+- **Line 71:** `sns.lineplot(data=df_hourly, x='hour', y='total_trips', marker='o', linewidth=2.5, color='darkred')` - Draws a line plot of hourly volume with distinct circular markers.
+- **Line 72:** `plt.title('Hourly Trip Concentration', fontsize=14, fontweight='bold')` - Sets the title of the hourly plot.
+- **Line 73:** `plt.xlabel('Hour of Day (24H)', fontsize=12)` - Labels the x-axis for hours.
+- **Line 74:** `plt.ylabel('Trip Volume', fontsize=12)` - Labels the y-axis for trip counts.
+- **Line 75:** `plt.grid(True, linestyle='--', alpha=0.6)` - Enhances the plot background with a dashed grid to assist reading values.
+- **Line 76:** `plt.xticks(range(0, 24))` - Forces the x-axis ticks to display every single hour from 0 to 23.
+- **Line 77:** `plt.fill_between(df_hourly['hour'], df_hourly['total_trips'], color='salmon', alpha=0.3)` - Colors the area below the line plot using a semi-transparent salmon color.
+- **Line 78:** `plt.show()` - Renders and displays the plot.
+- **Lines 79-84:** Markdown cell equivalent explaining Finding 3: demand spikes and daily volatility.
+- **Line 85:** `# In[ ]:` - A Jupyter Notebook cell marker.
+- **Line 86:** Blank line.
+- **Line 87:** Blank line.
+- **Lines 88-100:** `query_spikes = """..."""` - Contains the SQL logic for volatility. It uses a Common Table Expression (CTE) `daily_trips` to sum up trips per day of the year. The outer query then computes the row-to-row difference using the `LAG()` window function to track variance.
+- **Line 101:** `df_spikes = pd.read_sql(query_spikes, engine)` - Fetches the variance results from BigQuery into a DataFrame.
+- **Line 102:** Blank line.
+- **Line 103:** `plt.figure(figsize=(12, 5))` - Starts a wide 12x5 inch plot figure.
+- **Line 104:** `sns.lineplot(data=df_spikes, x='day_of_year', y='daily_variance', color='purple')` - Plots the daily variance over time.
+- **Line 105:** `plt.axhline(0, color='black', linestyle='--')` - Draws a horizontal baseline at y=0 to indicate the zero-variance neutral mark.
+- **Line 106:** `plt.title('Day-Over-Day Volatility (Demand Spikes)', fontsize=14, fontweight='bold')` - Adds a stylized title.
+- **Line 107:** `plt.xlabel('Day of Year', fontsize=12)` - Adds the x-axis label.
+- **Line 108:** `plt.ylabel('Variance vs Previous Day', fontsize=12)` - Adds the y-axis label indicating the variance.
+- **Line 109:** `plt.show()` - Displays the third plot.
+- **Lines 110-115:** Markdown cell headers explaining Finding 4: Pareto analysis demonstrating concentration of throughput at key stations.
+- **Line 116:** `# In[ ]:` - A Jupyter Notebook cell marker.
+- **Line 117:** Blank line.
+- **Line 118:** Blank line.
+- **Lines 119-128:** `query_stations = """..."""` - A SQL query performing a JOIN between `fact_trips` and `dim_stations` to count total trips grouped by station name, returning the top 10 stations via descending order and `LIMIT 10`.
+- **Line 129:** `df_stations = pd.read_sql(query_stations, engine)` - Loads the top 10 station query results into memory.
+- **Line 130:** Blank line.
+- **Line 131:** `plt.figure(figsize=(10, 6))` - Initializes the final 10x6 inch plot figure.
+- **Line 132:** `sns.barplot(data=df_stations, x='total_trips', y='station_name', palette='magma')` - Draws a horizontal bar chart mapping trips against station names, utilizing the 'magma' color scale.
+- **Line 133:** `plt.title('Top 10 High Volume Hubs', fontsize=14, fontweight='bold')` - Adds the final plot title.
+- **Line 134:** `plt.xlabel('Cumulative Trips originated', fontsize=12)` - Sets the x-axis label for cumulative trips.
+- **Line 135:** `plt.ylabel('Station', fontsize=12)` - Sets the y-axis label indicating station name.
+- **Line 136:** `plt.show()` - Displays the final station throughput bar chart.
+- **Line 137:** Blank line.
+- **Line 138:** Blank line.

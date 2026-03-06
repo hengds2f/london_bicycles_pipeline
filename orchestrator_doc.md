@@ -1,0 +1,41 @@
+# Documentation for `orchestrator.py`
+
+This document provides a line-by-line explanation of the `orchestrator.py` script.
+
+- **Line 1:** `import schedule` - Imports the third-party `schedule` library to run tasks at predefined time intervals.
+- **Line 2:** `import time` - Imports the standard `time` module used to implement sleep delays.
+- **Line 3:** `import logging` - Imports the standard `logging` module to output run execution details.
+- **Line 4:** `from ingestion import ingest_data` - Imports the `ingest_data` function created in `ingestion.py` for standard raw data validation.
+- **Line 5:** `from elt_pipeline import run_elt` - Imports the `run_elt` function created in `elt_pipeline.py` which executes BigQuery table building and testing.
+- **Line 6:** Blank line.
+- **Line 7:** `# Configure logging to display step execution` - Comment explaining the next line.
+- **Line 8:** `logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')` - Configures the logging system to capture INFO-level messages equipped with timestamps.
+- **Line 9:** Blank line.
+- **Line 10:** `def orchestrate_pipeline():` - Declares the main function `orchestrate_pipeline` representing the end-to-end data sequence.
+- **Line 11:** `""" Runs the end-to-end data pipeline targeting BigQuery sequentially. """` - A docstring explaining what the function does.
+- **Line 12:** `logging.info("--- Starting London Bikes Daily Pipeline Execution ---")` - Logs the initialization of the overarching pipeline process.
+- **Line 13:** Blank line.
+- **Line 14:** `try:` - Opens a master error-handling block encompassing all steps of the pipeline.
+- **Line 15:** `# Step 1: Ingestion` - Comment denoting the first discrete phase.
+- **Line 16:** `logging.info("Step 1: Ingestion (BigQuery Public -> Personal Dataset)")` - Logs that the ingestion phase is commencing.
+- **Line 17:** `ingest_data()` - Calls the validation logic from `ingestion.py`.
+- **Line 18:** Blank line.
+- **Line 19:** `# Step 2: ELT & DQ Tests` - Comment denoting the second phase.
+- **Line 20:** `logging.info("Step 2: ELT Transformations & Data Quality Validation on BigQuery")` - Logs the start of transformations and tests.
+- **Line 21:** `run_elt()` - Runs the core ETL transformations and data quality check code.
+- **Line 22:** Blank line.
+- **Line 23:** `logging.info("--- Pipeline Execution Complete! Downstream BI and Jupyter Notebook ready. ---")` - After successful completion of the preceding functions, logs that downstream clients (like notebooks or dashboards) are safe to proceed.
+- **Line 24:** Blank line.
+- **Line 25:** `except Exception as e:` - Catches any error bubbled up from the downstream functions.
+- **Line 26:** `logging.error(f"Pipeline execution halted due to error: {e}")` - Logs the specific exception text that crashed the pipeline.
+- **Line 27:** Blank line.
+- **Line 28:** `if __name__ == "__main__":` - Typical entry point wrapper asserting the script is run directly.
+- **Line 29:** `# Execute immediately` - Comment noting the pipeline kicks off right awway.
+- **Line 30:** `orchestrate_pipeline()` - Triggers the pipeline execution so the data gets refreshed at least once instantly.
+- **Line 31:** Blank line.
+- **Line 32:** `# Schedule the pipeline to run daily at midnight` - Comment summarizing the scheduling block.
+- **Line 33:** `logging.info("Scheduling pipeline to run daily at 00:00. Waiting...")` - Logs that a schedule has been created.
+- **Line 34:** `schedule.every().day.at("00:00").do(orchestrate_pipeline)` - Uses the schedule library to bind the orchestration function to fire every day at exactly midnight (server time).
+- **Line 35:** Blank line.
+- **Line 36-42:** Contains a multi-line comment block (with python string syntax). If uncommented, `while True:` mixed with `schedule.run_pending()` and `time.sleep(60)` would keep the Python process running indefinitely in an infinite loop, continuously checking every 60 seconds if it's midnight to trigger the schedule.
+- **Line 43:** Blank line.
