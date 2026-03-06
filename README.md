@@ -3,6 +3,8 @@
 This repository contains an end-to-end Data Engineering pipeline that processes the `london_bicycles` dataset from Google BigQuery Public Data. It performs Data Ingestion, ELT Transformations, Data Quality Testing, and Exploratory Data Analysis entirely within Google BigQuery using Python.
 
 ## Pipeline Architecture
+![Pipeline Architecture](pipeline_architecture.drawio.svg)
+
 1. **Source Data**: `bigquery-public-data.london_bicycles`
 2. **Data Warehouse**: Google BigQuery (Personal Dataset: `london_bikes` in Project: `bigdatads2f`)
 3. **Ingestion (Validation)**: Python verifies the connection and validates that the raw `cycle_hire` and `cycle_stations` tables exist directly in the personal BigQuery target dataset before invoking the pipeline.
