@@ -58,31 +58,49 @@ def run_elt():
         
         # Phase C: Data Quality Testing
         logging.info("Starting Data Quality Tests...")
+        import great_expectations as gx
+        
+        # Create an ephemeral data context
+        context = gx.get_context(mode="ephemeral")
+        
+        logging.info("Connecting Great Expectations to BigQuery...")
+        # configure datasource
+        datasource = context.sources.add_sql(
+            name="bq_datasource", 
+            connection_string=f"bigquery://{PROJECT_ID}/{DATASET_ID}"
+        )
+        
+        # Add assets
+        asset_trips = datasource.add_table_asset(name="fact_trips_asset", table_name="fact_trips")
+        asset_stations = datasource.add_table_asset(name="dim_stations_asset", table_name="dim_stations")
+        
+        # Get validators
+        batch_request_trips = asset_trips.build_batch_request()
+        validator_trips = context.get_validator(batch_request=batch_request_trips, expectation_suite_name="trips_suite")
+        
+        batch_request_stations = asset_stations.build_batch_request()
+        validator_stations = context.get_validator(batch_request=batch_request_stations, expectation_suite_name="stations_suite")
         
         # C.2 Test 1: Null values
-        null_test_trips = list(client.query(f"SELECT COUNT(*) as cnt FROM `{PROJECT_ID}.{DATASET_ID}.fact_trips` WHERE trip_id IS NULL").result())[0].cnt
-        assert null_test_trips == 0, f"DQ Test Failed: Found {null_test_trips} null trip_ids!"
+        res_null_trips = validator_trips.expect_column_values_to_not_be_null("trip_id")
+        assert res_null_trips.success, "DQ Test Failed: Found null trip_ids!"
         
-        null_test_stations = list(client.query(f"SELECT COUNT(*) as cnt FROM `{PROJECT_ID}.{DATASET_ID}.dim_stations` WHERE station_id IS NULL").result())[0].cnt
-        assert null_test_stations == 0, f"DQ Test Failed: Found {null_test_stations} null station_ids!"
+        res_null_stations = validator_stations.expect_column_values_to_not_be_null("station_id")
+        assert res_null_stations.success, "DQ Test Failed: Found null station_ids!"
         
         # C.2 Test 2: Duplicates
-        duplicate_trips = list(client.query(f"SELECT trip_id, COUNT(*) as cnt FROM `{PROJECT_ID}.{DATASET_ID}.fact_trips` GROUP BY trip_id HAVING COUNT(*) > 1").result())
-        assert len(duplicate_trips) == 0, f"DQ Test Failed: Found duplicates in fact_trips!"
+        res_dup_trips = validator_trips.expect_column_values_to_be_unique("trip_id")
+        assert res_dup_trips.success, "DQ Test Failed: Found duplicates in fact_trips!"
         
-        duplicate_stations = list(client.query(f"SELECT station_id, COUNT(*) as cnt FROM `{PROJECT_ID}.{DATASET_ID}.dim_stations` GROUP BY station_id HAVING COUNT(*) > 1").result())
-        assert len(duplicate_stations) == 0, f"DQ Test Failed: Found duplicates in dim_stations!"
+        res_dup_stations = validator_stations.expect_column_values_to_be_unique("station_id")
+        assert res_dup_stations.success, "DQ Test Failed: Found duplicates in dim_stations!"
         
         # C.2 Test 3: Referential Integrity
-        missing_stations_query = f"""
-            SELECT COUNT(*) as cnt
-            FROM `{PROJECT_ID}.{DATASET_ID}.fact_trips` f
-            LEFT JOIN `{PROJECT_ID}.{DATASET_ID}.dim_stations` s ON f.start_station_id = s.station_id
-            WHERE s.station_id IS NULL
-        """
-        missing_start_stations = list(client.query(missing_stations_query).result())[0].cnt
-        if missing_start_stations > 0:
-            logging.warning(f"DQ Warning: {missing_start_stations} trips have missing referential start_station_id.")
+        # Query stations to pass as a set
+        stations = [row.station_id for row in client.query(f"SELECT station_id FROM `{PROJECT_ID}.{DATASET_ID}.dim_stations`").result()]
+        res_ref_integrity = validator_trips.expect_column_values_to_be_in_set("start_station_id", value_set=stations)
+        if not res_ref_integrity.success:
+            logging.warning("DQ Warning: trips have missing referential start_station_id.")
             
         logging.info("Data Quality Tests Passed successfully.")
         

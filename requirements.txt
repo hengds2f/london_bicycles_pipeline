@@ -9,3 +9,5 @@ prefect
 matplotlib
 seaborn
 fpdf
+great-expectations
+sqlalchemy-bigquery
