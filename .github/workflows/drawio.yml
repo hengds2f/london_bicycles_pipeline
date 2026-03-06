@@ -1,0 +1,30 @@
+name: Export Drawio
+
+on:
+  push:
+    paths:
+      - '**.drawio'
+  workflow_dispatch:
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Export drawio files
+        uses: rlespinasse/drawio-export-action@v3
+        with:
+          format: 'svg'
+          transparent: true
+
+      - name: Commit exported images
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: Auto-export drawio to SVG"
+          file_pattern: "*.svg"
