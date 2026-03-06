@@ -29,33 +29,55 @@ This document provides a line-by-line explanation of the `elt_pipeline.py` scrip
 - **Line 58:** Blank line.
 - **Line 59:** `# Phase C: Data Quality Testing` - Comment delineating Phase C, data quality tests.
 - **Line 60:** `logging.info(...)` - Logs that Data Quality (DQ) tests are starting.
-- **Line 61:** Blank line.
-- **Line 62:** `# C.2 Test 1: Null values` - Comments the first DQ test.
-- **Line 63:** `null_test_trips = list(client.query(f"SELECT COUNT(*) as cnt FROM ...").result())[0].cnt` - Executes a BigQuery SQL statement counting null `trip_id` values in `fact_trips` and retrieves the result integer.
-- **Line 64:** `assert null_test_trips == 0, ...` - An assertion verifying there are zero null trips; fails the script if violated.
+- **Line 61:** `import great_expectations as gx` - Imports the Great Expectations module for data quality validation.
+- **Line 62:** Blank line.
+- **Line 63:** `# Create an ephemeral data context` - Comment explaining the setup of the Great Expectations context.
+- **Line 64:** `context = gx.get_context(mode="ephemeral")` - Initializes a temporary, in-memory data context for execution.
 - **Line 65:** Blank line.
-- **Line 66:** `null_test_stations = list(...)` - Executes a similar SQL count, checking for null `station_id` values in `dim_stations`.
-- **Line 67:** `assert null_test_stations == 0, ...` - Asserts that no missing station IDs exist, raising an error if so.
-- **Line 68:** Blank line.
-- **Line 69:** `# C.2 Test 2: Duplicates` - Comment noting the duplicate checking test.
-- **Line 70:** `duplicate_trips = list(...)` - Executes a SQL query checking the `fact_trips` table to find trips sharing the same `trip_id`.
-- **Line 71:** `assert len(duplicate_trips) == 0, ...` - Asserts that no duplicate trips were returned, throwing an exception if any were.
+- **Line 66:** `logging.info(...)` - Logs that Great Expectations is connecting to BigQuery.
+- **Line 67:** `# configure datasource` - Comment for adding a SQL datasource.
+- **Line 68-71:** `datasource = context.sources.add_sql(...)` - Connects Great Expectations to the target BigQuery dataset using an SQLAlchemy connection string.
 - **Line 72:** Blank line.
-- **Line 73:** `duplicate_stations = list(...)` - Executes a query looking for identical `station_id` records in `dim_stations`.
-- **Line 74:** `assert len(duplicate_stations) == 0, ...` - Asserts no duplicate stations are found.
-- **Line 75:** Blank line.
-- **Line 76:** `# C.2 Test 3: Referential Integrity` - Comment denoting a test on referential linkage between facts and dimensions.
-- **Line 77-82:** `missing_stations_query = ...` - A SQL query performing a LEFT JOIN from `fact_trips` to `dim_stations` to find rows in facts missing a parent station in the dimension.
-- **Line 83:** `missing_start_stations = list(client.query(...))[0].cnt` - Executes the query and grabs the null referential integrity count.
-- **Line 84:** `if missing_start_stations > 0:` - Checks if there are any broken referential links.
-- **Line 85:** `logging.warning(...)` - Logs a warning rather than failing the process completely for referential integrity.
-- **Line 86:** Blank line.
-- **Line 87:** `logging.info("Data Quality Tests Passed successfully.")` - Logs that all DQ tests concluded successfully (no asserts triggered).
-- **Line 88:** Blank line.
-- **Line 89:** `except Exception as e:` - General try-except error handler that traps any assertion failures, syntax errors, or BigQuery connectivity issues.
-- **Line 90:** `logging.error(...)` - Logs the resulting error message.
-- **Line 91:** `sys.exit(1)` - Exits the pipeline with a failure signal.
+- **Line 73:** `# Add assets` - Comment for defining data assets.
+- **Line 74:** `asset_trips = datasource.add_table_asset(...)` - Registers `fact_trips` as a table asset for validation.
+- **Line 75:** `asset_stations = datasource.add_table_asset(...)` - Registers `dim_stations` as a table asset for validation.
+- **Line 76:** Blank line.
+- **Line 77:** `# Get validators` - Comment indicating the initialization of expectations and validators.
+- **Line 78:** `context.add_or_update_expectation_suite(...)` - Creates or updates the `trips_suite` in the ephemeral context to avoid missing suite errors.
+- **Line 79:** `batch_request_trips = asset_trips.build_batch_request()` - Builds a batch request to fetch all data in the `fact_trips` asset.
+- **Line 80:** `validator_trips = context.get_validator(...)` - Retrieves a validator to run expectations on the `fact_trips` batch against `trips_suite`.
+- **Line 81:** Blank line.
+- **Line 82:** `context.add_or_update_expectation_suite(...)` - Creates or updates the `stations_suite` expectation suite.
+- **Line 83:** `batch_request_stations = asset_stations.build_batch_request()` - Builds a batch request for the `dim_stations` asset.
+- **Line 84:** `validator_stations = context.get_validator(...)` - Retrieves a validator for the `dim_stations` batch against `stations_suite`.
+- **Line 85:** Blank line.
+- **Line 86:** `# C.2 Test 1: Null values` - Comments the first DQ test.
+- **Line 87:** `res_null_trips = validator_trips.expect_column_values_to_not_be_null("trip_id")` - Runs an expectation checking for null `trip_id`s in `fact_trips`.
+- **Line 88:** `assert res_null_trips.success, ...` - Asserts the expectation was successful, otherwise throws a missing ID error.
+- **Line 89:** Blank line.
+- **Line 90:** `res_null_stations = validator_stations.expect_column_values_to_not_be_null("station_id")` - Expects no null `station_id`s in `dim_stations`.
+- **Line 91:** `assert res_null_stations.success, ...` - Asserts the station ID validation passed.
 - **Line 92:** Blank line.
-- **Line 93:** `if __name__ == "__main__":` - Detects if script is the main program.
-- **Line 94:** `run_elt()` - Kicks off the `run_elt()` process.
-- **Line 95:** Blank line.
+- **Line 93:** `# C.2 Test 2: Duplicates` - Comment noting the duplicate checking test.
+- **Line 94:** `res_dup_trips = validator_trips.expect_column_values_to_be_unique("trip_id")` - Validates trip_ids are globally unique within the batch.
+- **Line 95:** `assert res_dup_trips.success, ...` - Fails the script if duplicate trips are found.
+- **Line 96:** Blank line.
+- **Line 97:** `res_dup_stations = validator_stations.expect_column_values_to_be_unique("station_id")` - Validates station_ids are globally unique.
+- **Line 98:** `assert res_dup_stations.success, ...` - Fails the script if duplicate stations exist.
+- **Line 99:** Blank line.
+- **Line 100:** `# C.2 Test 3: Referential Integrity` - Comment denoting a test ensuring foreign keys map accurately.
+- **Line 101:** `# Query stations to pass as a set` - Comments fetching a dynamic set of primary keys.
+- **Line 102:** `stations = [row.station_id for row in client.query(...).result()]` - Executes SQL mapping existing `station_id`s into a native Python list.
+- **Line 103:** `res_ref_integrity = validator_trips.expect_column_values_to_be_in_set(...)` - Verifies all `start_station_id`s in `fact_trips` exist within our fetched valid target list of stations.
+- **Line 104:** `if not res_ref_integrity.success:` - Assesses referential integrity failure without stopping execution.
+- **Line 105:** `logging.warning(...)` - Logs a warning instead of hard failing.
+- **Line 106:** Blank line.
+- **Line 107:** `logging.info("Data Quality Tests Passed successfully.")` - Logs full completion of the validations.
+- **Line 108:** Blank line.
+- **Line 109:** `except Exception as e:` - Tries to catch any BigQuery failures, great_expectation assertions, or Python errors.
+- **Line 110:** `logging.error(f"ELT/DQ Process failed: {e}")` - Logs the trapped exception nicely.
+- **Line 111:** `sys.exit(1)` - Exits out reporting failure flag indicating a broken pipeline.
+- **Line 112:** Blank line.
+- **Line 113:** `if __name__ == "__main__":` - Typical entry point wrapper.
+- **Line 114:** `run_elt()` - Runs the primary pipeline flow natively.
+- **Line 115:** Blank line.

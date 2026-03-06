@@ -75,9 +75,11 @@ def run_elt():
         asset_stations = datasource.add_table_asset(name="dim_stations_asset", table_name="dim_stations")
         
         # Get validators
+        context.add_or_update_expectation_suite(expectation_suite_name="trips_suite")
         batch_request_trips = asset_trips.build_batch_request()
         validator_trips = context.get_validator(batch_request=batch_request_trips, expectation_suite_name="trips_suite")
         
+        context.add_or_update_expectation_suite(expectation_suite_name="stations_suite")
         batch_request_stations = asset_stations.build_batch_request()
         validator_stations = context.get_validator(batch_request=batch_request_stations, expectation_suite_name="stations_suite")
         

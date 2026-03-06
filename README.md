@@ -8,7 +8,7 @@ This repository contains an end-to-end Data Engineering pipeline that processes 
 1. **Source Data**: `bigquery-public-data.london_bicycles`
 2. **Data Warehouse**: Google BigQuery (Personal Dataset: `london_bikes` in Project: `bigdatads2f`)
 3. **Ingestion (Validation)**: Python verifies the connection and validates that the raw `cycle_hire` and `cycle_stations` tables exist directly in the personal BigQuery target dataset before invoking the pipeline.
-4. **ELT & Data Quality**: Python executes native BigQuery SQL (DDL and DML) to transform the raw tables into a Star Schema (`dim_stations`, `fact_trips`). It immediately runs Data Quality validation queries (checks for nulls, duplicates, and referential integrity).
+4. **ELT & Data Quality**: Python executes native BigQuery SQL (DDL and DML) to transform the raw tables into a Star Schema (`dim_stations`, `fact_trips`). It immediately runs Data Quality validation using Great Expectations (checks for nulls, duplicates, and referential integrity).
 5. **Analysis**: Python queries the Star Schema, pulling aggregate metrics down to Pandas DataFrames for generating Seaborn/Matplotlib visualizations.
 6. **Orchestration**: A sleek python `schedule` script sequentially orchestrates the entire flow.
 
@@ -41,6 +41,8 @@ This repository contains an end-to-end Data Engineering pipeline that processes 
 3. **Install Dependencies:**
    ```bash
    pip install -r requirements.txt
+   # Note: If `great-expectations` fails to install due to numpy build errors on newer Python versions, you can install the required dependencies directly bypassing numpy compilation:
+   # pip install "great-expectations" "altair<5.0.0,>=4.2.1" "makefun<2,>=1.7.0" "marshmallow<4.0.0,>=3.7.1" "ruamel.yaml<0.18,>=0.16" "tqdm>=4.59.0"
    ```
 
 ## Running the Pipeline

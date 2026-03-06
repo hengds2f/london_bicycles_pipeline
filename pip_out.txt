@@ -1,0 +1,84 @@
+Collecting great-expectations
+  Using cached great_expectations-0.18.22-py3-none-any.whl.metadata (8.5 kB)
+Collecting altair<5.0.0,>=4.2.1 (from great-expectations)
+  Using cached altair-4.2.2-py3-none-any.whl.metadata (13 kB)
+Requirement already satisfied: Click>=7.1.2 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (8.3.1)
+Requirement already satisfied: colorama>=0.4.3 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (0.4.6)
+Requirement already satisfied: cryptography>=3.2 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (46.0.5)
+Requirement already satisfied: Ipython>=7.16.3 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (9.6.0)
+Requirement already satisfied: ipywidgets>=7.5.1 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (8.1.8)
+Requirement already satisfied: jinja2>=2.10 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (3.1.6)
+Requirement already satisfied: jsonpatch>=1.22 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (1.33)
+Requirement already satisfied: jsonschema>=2.5.1 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (4.25.1)
+Collecting makefun<2,>=1.7.0 (from great-expectations)
+  Using cached makefun-1.16.0-py2.py3-none-any.whl.metadata (2.9 kB)
+Collecting marshmallow<4.0.0,>=3.7.1 (from great-expectations)
+  Using cached marshmallow-3.26.2-py3-none-any.whl.metadata (7.3 kB)
+Requirement already satisfied: mistune>=0.8.4 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (3.1.4)
+Requirement already satisfied: nbformat>=5.0 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (5.10.4)
+Requirement already satisfied: notebook>=6.4.10 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (7.4.7)
+Requirement already satisfied: packaging in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (25.0)
+Requirement already satisfied: pydantic>=1.9.2 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (1.10.26)
+Requirement already satisfied: pyparsing>=2.4 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (3.3.2)
+Requirement already satisfied: python-dateutil>=2.8.1 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (2.9.0.post0)
+Requirement already satisfied: pytz>=2021.3 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (2025.2)
+Requirement already satisfied: requests>=2.20 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (2.32.5)
+Collecting ruamel.yaml<0.18,>=0.16 (from great-expectations)
+  Using cached ruamel.yaml-0.17.40-py3-none-any.whl.metadata (19 kB)
+Requirement already satisfied: scipy>=1.6.0 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (1.17.0)
+Collecting tqdm>=4.59.0 (from great-expectations)
+  Using cached tqdm-4.67.3-py3-none-any.whl.metadata (57 kB)
+Requirement already satisfied: typing-extensions>=3.10.0.0 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (4.15.0)
+Requirement already satisfied: tzlocal>=1.2 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (5.3.1)
+Requirement already satisfied: urllib3>=1.26 in c:\users\user\appdata\local\programs\python\python314\lib\site-packages (from great-expectations) (2.5.0)
+Collecting numpy<2.0.0,>=1.22.4 (from great-expectations)
+  Using cached numpy-1.26.4.tar.gz (15.8 MB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Installing backend dependencies: started
+  Installing backend dependencies: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  Preparing metadata (pyproject.toml) did not run successfully.
+  exit code: 1
+  
+  [21 lines of output]
+  + C:\Users\user\AppData\Local\Programs\Python\Python314\python.exe C:\Users\user\AppData\Local\Temp\pip-install-uxbtmnqu\numpy_bf7658d55dab4000a74af46427a94782\vendored-meson\meson\meson.py setup C:\Users\user\AppData\Local\Temp\pip-install-uxbtmnqu\numpy_bf7658d55dab4000a74af46427a94782 C:\Users\user\AppData\Local\Temp\pip-install-uxbtmnqu\numpy_bf7658d55dab4000a74af46427a94782\.mesonpy-ka8v6mvz -Dbuildtype=release -Db_ndebug=if-release -Db_vscrt=md --native-file=C:\Users\user\AppData\Local\Temp\pip-install-uxbtmnqu\numpy_bf7658d55dab4000a74af46427a94782\.mesonpy-ka8v6mvz\meson-python-native-file.ini
+  The Meson build system
+  Version: 1.2.99
+  Source dir: C:\Users\user\AppData\Local\Temp\pip-install-uxbtmnqu\numpy_bf7658d55dab4000a74af46427a94782
+  Build dir: C:\Users\user\AppData\Local\Temp\pip-install-uxbtmnqu\numpy_bf7658d55dab4000a74af46427a94782\.mesonpy-ka8v6mvz
+  Build type: native build
+  Project name: NumPy
+  Project version: 1.26.4
+  WARNING: Failed to activate VS environment: Could not find C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe
+  
+  ..\meson.build:1:0: ERROR: Unknown compiler(s): [['icl'], ['cl'], ['cc'], ['gcc'], ['clang'], ['clang-cl'], ['pgcc']]
+  The following exception(s) were encountered:
+  Running `icl ""` gave "[WinError 2] The system cannot find the file specified"
+  Running `cl /?` gave "[WinError 2] The system cannot find the file specified"
+  Running `cc --version` gave "[WinError 2] The system cannot find the file specified"
+  Running `gcc --version` gave "[WinError 2] The system cannot find the file specified"
+  Running `clang --version` gave "[WinError 2] The system cannot find the file specified"
+  Running `clang-cl /?` gave "[WinError 2] The system cannot find the file specified"
+  Running `pgcc --version` gave "[WinError 2] The system cannot find the file specified"
+  
+  A full log can be found at C:\Users\user\AppData\Local\Temp\pip-install-uxbtmnqu\numpy_bf7658d55dab4000a74af46427a94782\.mesonpy-ka8v6mvz\meson-logs\meson-log.txt
+  [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+
+[notice] A new release of pip is available: 25.2 -> 26.0.1
+[notice] To update, run: python.exe -m pip install --upgrade pip
+error: metadata-generation-failed
+
+Encountered error while generating package metadata.
+
+See above for output.
+
+note: This is an issue with the package mentioned above, not pip.
+hint: See above for details.
