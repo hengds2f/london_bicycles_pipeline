@@ -2,8 +2,8 @@ name: Export Drawio
 
 on:
   push:
-    paths:
-      - '**.drawio'
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
